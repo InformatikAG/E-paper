@@ -5,8 +5,13 @@ client.connect("192.168.178.117", 1883, 60)
 
 client.publish("inTopic", "1")
 
-for i in range(10):
-    test = input()
-    client.publish("inTopic", test)
+while (True):
+    print("Input a topic or q to quit")
+    topic = input()
+    if (topic == "q"):
+        break
+    print("Input a value for " + topic)
+    value = input()
+    client.publish(topic, value)
 
 client.disconnect()
