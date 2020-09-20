@@ -1,9 +1,8 @@
 import paho.mqtt.client as mqtt
 
 client = mqtt.Client()
-client.connect("192.168.178.117", 1883, 60)
-
-client.publish("inTopic", "1")
+client.username_pw_set("username","password")
+client.connect("192.168.178.45", 1883, 60)
 
 while (True):
     print("Input a topic or q to quit")

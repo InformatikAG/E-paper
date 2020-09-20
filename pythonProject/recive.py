@@ -7,6 +7,7 @@ def on_message(client, userdata, msg):
 
 client = mqtt.Client()
 client.on_message = on_message
-client.connect("192.168.178.117", 1883, 60)
+client.username_pw_set("username","password")
+client.connect("192.168.178.45", 1883, 60)
 client.subscribe("test/temperatur")
 client.loop_forever()
