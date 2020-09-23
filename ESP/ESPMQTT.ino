@@ -36,15 +36,14 @@ int value = 0;
 void setup_wifi() {
 
   delay(10);
-  // We start by connecting to a WiFi network
   Serial.println();
   Serial.print("Connecting to ");
   Serial.println(ssid);
-
+  // We start by connecting to a WiFi network
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, password);
 
-  while (WiFi.status() != WL_CONNECTED) {
+  while (WiFi.status() != WL_CONNECTED) { //wait until conected to wifi
     delay(500);
     Serial.print(".");
   }
@@ -58,10 +57,9 @@ char Klasse[20];
 
 void callback(char* topic, byte* payload, unsigned int length) {
 
-
   Serial.println(topic[10]);
 
-  switch (topic[10]) {
+  switch (topic[10]) { //check the 11th charactar of the MQTT Topic
     case 'F':
       memset(Fach, 0, sizeof(Fach));
       for (int i = 0; i < length; i++) {
