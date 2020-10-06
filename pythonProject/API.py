@@ -10,10 +10,10 @@ useragent='E-Paper AG'
 
 print("Klassen: ---------------------------------")
 for klasse in s.klassen():
-print(klasse.name)
+    print(klasse.name)
 
 print("Räume: ---------------------------------")
 for time in s.rooms():
-print(time.name)
+    print(time.name)
 
 s.logout()
