@@ -13,7 +13,7 @@ def convertTeachers(hour):
     try:
         new = []
         for i in hour.teachers:
-            new.append(i.long_name)
+            new.append([i.long_name, i.name])
         return new
     except:
         return []
@@ -23,7 +23,7 @@ def convertRooms(hour):
     try:
         new = []
         for i in hour.rooms:
-            new.append(i.long_name)
+            new.append(i.name)
         return new
     except:
         return []
@@ -33,7 +33,7 @@ def convertOriginalTeachers(hour):
     try:
         new = []
         for i in hour.original_teachers:
-            new.append(i.long_name)
+            new.append([i.long_name, i.name])
         return new
     except:
         return []
@@ -43,7 +43,7 @@ def convertOriginalRooms(hour):
     try:
         new = []
         for i in hour.original_rooms:
-            new.append(i.long_name)
+            new.append(i.name)
         return new
     except:
         return []
@@ -53,7 +53,7 @@ def convertSubjects(hour):
     try:
         new = []
         for i in hour.subjects:
-            new.append(i.long_name)
+            new.append([i.long_name,i.name])
         return new
     except:
         return []
@@ -63,7 +63,7 @@ def convertKlassen(hour):
     try:
         new = []
         for i in hour.klassen:
-            new.append(i.long_name)
+            new.append([i.long_name,i.name])
         return new
     except:
         return []
