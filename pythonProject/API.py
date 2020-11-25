@@ -9,6 +9,10 @@ monday = today - datetime.timedelta(days=today.weekday())
 friday = monday + datetime.timedelta(days=4)
 
 
+def sort(e):
+    return e["start"]
+
+
 def convertTeachers(hour):
     try:
         new = []
@@ -83,6 +87,7 @@ def timetableToPy(timetable):
             "klassen": convertKlassen(hour),
             "code": hour.code
         })
+    table.sort(key=sort)
     return table
 
 
