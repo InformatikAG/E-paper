@@ -3,21 +3,34 @@ import datetime
 
 with open("test","rb") as infile:
     rooms = pickle.load(infile)
+print(rooms)
 
 
-def curentHour(room):
-    for hour in room:
-        if (hour["start"] < datetime.datetime.now()) & (hour["end"] > datetime.datetime.now()):
-            return hour
+def getCurentHourIndex(room):
+    for i, hour in enumerate(room):
+        if hour["end"] > datetime.datetime.now():
+            return i
 
 
-def nextTime(room):
-    time = datetime.datetime.now() + datetime.timedelta(days=1)
-    for hour in room:
-        if time > hour["start"] > datetime.datetime.now():
-            time = hour["start"]
-        if time > hour["end"] > datetime.datetime.now():
-            time = hour["end"]
-    return time
+def getStartOfHour(room, i):
+    j = i
+    while room[i]["subjects"] == room[j]["subjects"] and room[i]["klassen"] == room[j]["klassen"]:
+        if j > 0:
+            j -= 1
+        else:
+            return room[j]["start"]
+    return room[j+1]["start"]
 
-print(nextTime(rooms["2.312"]))
+
+def getEndOfHour(room, i):
+    j = i
+    while room[i]["subjects"] == room[j]["subjects"] and room[i]["klassen"] == room[j]["klassen"]:
+        if len(room) > (j+1):
+            j += 1
+        else:
+            return room[j]["end"]
+    return room[j-1]["end"]
+
+
+print(getStartOfHour(rooms["2.312"], getCurentHourIndex(rooms["2.312"])))
+print(getEndOfHour(rooms["2.312"], getCurentHourIndex(rooms["2.312"])))
