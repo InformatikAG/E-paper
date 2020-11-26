@@ -12,6 +12,12 @@ def getCurentHourIndex(room):
             return i
 
 
+def getCurentHour(room):
+    for i, hour in enumerate(room):
+        if hour["end"] > datetime.datetime.now():
+            return hour
+
+
 def getStartOfHour(room, i):
     j = i
     while room[i]["subjects"] == room[j]["subjects"] and room[i]["klassen"] == room[j]["klassen"]:
@@ -32,5 +38,6 @@ def getEndOfHour(room, i):
     return room[j-1]["end"]
 
 
-print(getStartOfHour(rooms["2.312"], getCurentHourIndex(rooms["2.312"])))
-print(getEndOfHour(rooms["2.312"], getCurentHourIndex(rooms["2.312"])))
+print(getStartOfHour(rooms["2.311"], getCurentHourIndex(rooms["2.311"])))
+print(getEndOfHour(rooms["2.311"], getCurentHourIndex(rooms["2.311"])))
+print(rooms["2.311"][getCurentHourIndex(rooms["2.311"])]["subjects"])
