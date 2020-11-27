@@ -11,14 +11,14 @@ lengthOriginalRoom = 10
 offsetSleepStartHour = datetime.timedelta(minutes=5)
 '''how long before the start of an hour does the ESP wake up'''
 
-offsetPauseEnd = offsetSleepStartHour + datetime.timedelta(minutes=5)
-'''how long before the end of the pause do we say it ended'''
+offsetBreakEnd = offsetSleepStartHour + datetime.timedelta(minutes=5)
+'''how long before the end of the break do we say it ended'''
 
 offsetSleepEndHour = datetime.timedelta(minutes=0)
 '''how long before the end of an hour does the ESP wake up'''
 
-offsetPauseStart = datetime.timedelta(minutes=0)
-'''how long before the start of an pause do we say it started'''
+offsetBreakStart = datetime.timedelta(minutes=0)
+'''how long before the start of an break do we say it started'''
 
 with open("test", "rb") as infile:
     rooms = pickle.load(infile)
@@ -152,21 +152,27 @@ def getSleepTime(room):
         # returns the number of seconds until the end of the current hour minus the offset.
 
 
-# print(timeToString(getStartOfHour(rooms["2.311"], getCurentHourIndex(rooms["2.311"]))))
-# print(timeToString(getEndOfHour(rooms["2.311"], getCurentHourIndex(rooms["2.311"]))))
-# print(rooms["2.311"][getCurentHourIndex(rooms["2.311"])]["subjects"])
+def isBreak(room):
+    """:returns false during class including the offsets"""
+    for hour in room:
+        if (hour["start"] - offsetBreakEnd) < datetime.datetime.now() < (hour["end"] - offsetBreakStart):
+            return False
+    return True
+
 
 
 for room in rooms:
     hour = getCurentHour(rooms[room])
     if hour is None:
-        print("sleep until tomorow")
+        print("sleep until tomorrow")
         print()
         continue
-    print("Fach: " + subjectsToString(hour))
-    print("Lehrer: " + teachersToString(hour))
-    print("Zeit: " + timeToString(getStartOfHour(rooms[room], getCurentHourIndex(rooms[room]))) + " - "
+    print(room + ":")
+    print(" Fach: " + subjectsToString(hour))
+    print(" Lehrer: " + teachersToString(hour))
+    print(" Zeit: " + timeToString(getStartOfHour(rooms[room], getCurentHourIndex(rooms[room]))) + " - "
           + timeToString(getEndOfHour(rooms[room], getCurentHourIndex(rooms[room]))))
-    print("Klasse: " + klassenToString(rooms[room][0]))
-    print("DeepSleepTime: " + str(getSleepTime(rooms[room])))
+    print(" Klasse: " + klassenToString(rooms[room][0]))
+    print(" Pause: " + repr(isBreak(rooms[room])))
+    print(" DeepSleepTime: " + repr(getSleepTime(rooms[room])))
     print()
