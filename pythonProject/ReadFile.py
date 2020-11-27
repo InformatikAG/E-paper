@@ -116,6 +116,15 @@ def klassenToString(hour):
     return short
 
 
+def getSleepTime(room):
+    if getCurentHour(room)["start"] > datetime.datetime.now():
+        return getCurentHour(room)["start"]
+    else: getCurentHour(room)["end"]
+
+
+
+
+
 # print(timeToString(getStartOfHour(rooms["2.311"], getCurentHourIndex(rooms["2.311"]))))
 # print(timeToString(getEndOfHour(rooms["2.311"], getCurentHourIndex(rooms["2.311"]))))
 # print(rooms["2.311"][getCurentHourIndex(rooms["2.311"])]["subjects"])
