@@ -119,7 +119,8 @@ def klassenToString(hour):
 def getSleepTime(room):
     if getCurentHour(room)["start"] > datetime.datetime.now():
         return getCurentHour(room)["start"]
-    else: getCurentHour(room)["end"]
+    else:
+        return getCurentHour(room)["end"]
 
 
 
