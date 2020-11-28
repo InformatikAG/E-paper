@@ -1,5 +1,10 @@
 import pickle
 import datetime
+import paho.mqtt.client as mqtt
+
+client = mqtt.Client()
+client.username_pw_set("username", "password")
+client.connect("192.168.178.117", 1883, 60)
 
 '''the max lengths of strings that is allowed'''
 lengthTeachers = 10
@@ -22,6 +27,8 @@ offsetBreakStart = datetime.timedelta(minutes=0)
 
 with open("test", "rb") as infile:
     rooms = pickle.load(infile)
+
+
 # print(rooms)
 
 
@@ -160,19 +167,39 @@ def isBreak(room):
     return True
 
 
-
 for room in rooms:
     hour = getCurentHour(rooms[room])
+    print(room + ":")
     if hour is None:
         print("sleep until tomorrow")
+        client.publish(room + "/DeepSleepTime", (datetime.datetime.now().replace(hour=7,minute=0,second=0) - datetime.datetime.now()
+                                                 + datetime.timedelta(days=1)).total_seconds())
         print()
         continue
-    print(room + ":")
-    print(" Fach: " + subjectsToString(hour))
-    print(" Lehrer: " + teachersToString(hour))
-    print(" Zeit: " + timeToString(getStartOfHour(rooms[room], getCurentHourIndex(rooms[room]))) + " - "
-          + timeToString(getEndOfHour(rooms[room], getCurentHourIndex(rooms[room]))))
-    print(" Klasse: " + klassenToString(rooms[room][0]))
-    print(" Pause: " + repr(isBreak(rooms[room])))
-    print(" DeepSleepTime: " + repr(getSleepTime(rooms[room])))
+
+    fach = subjectsToString(hour)
+    print(" Fach: " + fach)
+    client.publish(room + "/Fach", fach)
+
+    lehrer = teachersToString(hour)
+    print(" Lehrer: " + lehrer)
+    client.publish(room + "/Lehrer", lehrer)
+
+    zeit = (timeToString(getStartOfHour(rooms[room], getCurentHourIndex(rooms[room]))) + " - "
+            + timeToString(getEndOfHour(rooms[room], getCurentHourIndex(rooms[room]))))
+    print(" Zeit: " + zeit)
+    client.publish(room + "/Zeit")
+
+    klasse = klassenToString(rooms[room][0])
+    print(" Klasse: " + klasse)
+    client.publish(room + "/Klasse", klasse)
+
+    pause = isBreak(rooms[room])
+    print(" Pause: " + repr(pause))
+    client.publish(room + "/Pause", pause)
+
+    deepSleepTime = getSleepTime(rooms[room])
+    print(" DeepSleepTime: " + repr(deepSleepTime))
+    client.publish(room + "/DeepSleepTime", deepSleepTime)
+
     print()
