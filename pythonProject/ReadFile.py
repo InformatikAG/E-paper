@@ -22,27 +22,25 @@ offsetBreakEnd = offsetSleepStartHour + datetime.timedelta(minutes=5)
 offsetSleepEndHour = datetime.timedelta(minutes=0)
 '''how long before the end of an hour does the ESP wake up'''
 
-offsetBreakStart = datetime.timedelta(minutes=0)
+offsetBreakStart = offsetSleepEndHour + datetime.timedelta(minutes=0)
 '''how long before the start of an break do we say it started'''
 
 with open("test", "rb") as infile:
     rooms = pickle.load(infile)
-
-
 # print(rooms)
 
 
-def getCurentHourIndex(room):
+def getCurrentHourIndex(room):
     """goes through the hours and returns the index of the earliest which isn't over jet"""
     for i, hour in enumerate(room):
-        if hour["end"] > datetime.datetime.now():
+        if hour["end"] > (datetime.datetime.now() + offsetBreakStart):
             return i
 
 
-def getCurentHour(room):
+def getCurrentHour(room):
     """goes through the hours and returns the earliest which isn't over jet"""
     for i, hour in enumerate(room):
-        if hour["end"] > datetime.datetime.now():
+        if hour["end"] > (datetime.datetime.now() + offsetBreakStart):
             return hour
 
 
@@ -69,7 +67,7 @@ def getEndOfHour(room, i):
 
 
 def timeToString(time):
-    """:returns the time in the format hh:mm"""
+    """:returns the time in the format hh:mm as a String"""
     return str(time.hour) + ":" + str(time.minute)
 
 
@@ -79,13 +77,13 @@ def teachersToString(hour):
 
     for teacher in hour["teachers"]:
         long += (teacher[0] + "; ")
-    long = long[:-2]
+    long = long[:-2]  # deletes the last to characters which are "; "
 
     if len(hour["original_teachers"]) != 0:
         long += "("
         for teacher in hour["original_teachers"]:
             long += (teacher[0] + "; ")
-        long = long[:-2]
+        long = long[:-2]  # deletes the last to characters which are "; "
         long += ")"
 
     if len(long) < lengthTeachers:
@@ -94,15 +92,15 @@ def teachersToString(hour):
     short = ""
     for teacher in hour["teachers"]:
         short += (teacher[1] + "; ")
-    short = short[:-2]
+    short = short[:-2]  # deletes the last to characters which are "; "
 
     if len(hour["original_teachers"]) != 0:
         short += " ("
         for teacher in hour["original_teachers"]:
             short += (teacher[1] + "; ")
-        short = short[:-2]
+        short = short[:-2]  # deletes the last to characters which are "; "
         short += ")"
-    short = short[:lengthTeachers]
+    short = short[:lengthTeachers]  # cuts of every character after tha set limit
     return short
 
 
@@ -112,7 +110,7 @@ def subjectsToString(hour):
 
     for subject in hour["subjects"]:
         long += (subject[0] + "; ")
-    long = long[:-2]
+    long = long[:-2]  # deletes the last to characters which are "; "
 
     if len(long) < lengthSubjects:
         return long
@@ -120,19 +118,19 @@ def subjectsToString(hour):
     short = ""
     for subject in hour["subjects"]:
         short += (subject[1] + "; ")
-    short = short[:-2]
-    short = short[:lengthSubjects]
+    short = short[:-2]  # deletes the last to characters which are "; "
+    short = short[:lengthSubjects]  # cuts of every character after tha set limit
 
     return short
 
 
 def klassenToString(hour):
-    """:returns a string with a max length containing all klasses of the room"""
+    """:returns a string with a max length containing all Klassen of the room"""
     long = ""
 
     for klasse in hour["klassen"]:
         long += (klasse[0] + "; ")
-    long = long[:-2]
+    long = long[:-2]  # deletes the last to characters which are "; "
 
     if len(long) < lengthKlassen:
         return long
@@ -140,8 +138,8 @@ def klassenToString(hour):
     short = ""
     for klasse in hour["klassen"]:
         short += (klasse[1] + "; ")
-    short = short[:-2]
-    short = short[:lengthKlassen]
+    short = short[:-2]  # deletes the last to characters which are "; "
+    short = short[:lengthKlassen]  # cuts of every character after tha set limit
 
     return short
 
@@ -150,12 +148,12 @@ def getSleepTime(room):
     """
     :returns the number of seconds until the ESP has to wakeup
     """
-    if getCurentHour(room)["start"] > (datetime.datetime.now() + offsetSleepStartHour):
+    if getCurrentHour(room)["start"] > (datetime.datetime.now() + offsetSleepStartHour):
         # is the start of the next or current hour more into the future than the offset?
-        return (getCurentHour(room)["start"] - datetime.datetime.now() - offsetSleepStartHour).total_seconds()
+        return (getCurrentHour(room)["start"] - datetime.datetime.now() - offsetSleepStartHour).total_seconds()
         # returns the number of seconds until the start of the next hour minus the offset.
     else:
-        return (getCurentHour(room)["end"] - datetime.datetime.now() - offsetSleepEndHour).total_seconds()
+        return (getCurrentHour(room)["end"] - datetime.datetime.now() - offsetSleepEndHour).total_seconds()
         # returns the number of seconds until the end of the current hour minus the offset.
 
 
@@ -168,11 +166,12 @@ def isBreak(room):
 
 
 for room in rooms:
-    hour = getCurentHour(rooms[room])
+    hour = getCurrentHour(rooms[room])
     print(room + ":")
     if hour is None:
         print("sleep until tomorrow")
-        client.publish(room + "/DeepSleepTime", (datetime.datetime.now().replace(hour=7,minute=0,second=0) - datetime.datetime.now()
+        client.publish(room + "/DeepSleepTime", (datetime.datetime.now().replace(hour=7, minute=0, second=0)
+                                                 - datetime.datetime.now()
                                                  + datetime.timedelta(days=1)).total_seconds())
         print()
         continue
@@ -185,8 +184,8 @@ for room in rooms:
     print(" Lehrer: " + lehrer)
     client.publish(room + "/Lehrer", lehrer)
 
-    zeit = (timeToString(getStartOfHour(rooms[room], getCurentHourIndex(rooms[room]))) + " - "
-            + timeToString(getEndOfHour(rooms[room], getCurentHourIndex(rooms[room]))))
+    zeit = (timeToString(getStartOfHour(rooms[room], getCurrentHourIndex(rooms[room]))) + " - "
+            + timeToString(getEndOfHour(rooms[room], getCurrentHourIndex(rooms[room]))))
     print(" Zeit: " + zeit)
     client.publish(room + "/Zeit")
 
