@@ -2,11 +2,12 @@ import pickle
 import datetime
 import paho.mqtt.client as mqtt
 
+# creating the client object and connecting to the mqtt server
 client = mqtt.Client()
 client.username_pw_set("username", "password")
 client.connect("192.168.178.117", 1883, 60)
 
-'''the max lengths of strings that is allowed'''
+# the max lengths of strings that is allowed
 lengthTeachers = 10
 lengthOriginalTeachers = 10
 lengthSubjects = 10
@@ -14,38 +15,38 @@ lengthKlassen = 10
 lengthOriginalRoom = 10
 
 offsetSleepStartHour = datetime.timedelta(minutes=5)
-'''how long before the start of an hour does the ESP wake up'''
+"""how long before the start of an hour does the ESP wake up"""
 
 offsetBreakEnd = offsetSleepStartHour + datetime.timedelta(minutes=5)
-'''how long before the end of the break do we say it ended'''
+"""how long before the end of the break do we say it ended"""
 
 offsetSleepEndHour = datetime.timedelta(minutes=0)
-'''how long before the end of an hour does the ESP wake up'''
+"""how long before the end of an hour does the ESP wake up"""
 
 offsetBreakStart = offsetSleepEndHour + datetime.timedelta(minutes=0)
-'''how long before the start of an break do we say it started'''
+"""how long before the start of an break do we say it started"""
 
 with open("test", "rb") as infile:
-    rooms = pickle.load(infile)
+    rooms = pickle.load(infile)  # using pickle to read the file containing all the untis data
 # print(rooms)
 
 
 def getCurrentHourIndex(room):
-    """goes through the hours and returns the index of the earliest which isn't over jet"""
+    """goes through the hours and returns the index of the earliest which isn't over jet using the offset"""
     for i, hour in enumerate(room):
         if hour["end"] > (datetime.datetime.now() + offsetBreakStart):
             return i
 
 
 def getCurrentHour(room):
-    """goes through the hours and returns the earliest which isn't over jet"""
+    """goes through the hours and returns the earliest which isn't over jet using the offset"""
     for i, hour in enumerate(room):
         if hour["end"] > (datetime.datetime.now() + offsetBreakStart):
             return hour
 
 
 def getStartOfHour(room, i):
-    """goes through the list of hours and returns the start time of last one that is not the same"""
+    """goes through the list of hours and returns the start time of the last one that is the same"""
     j = i
     while room[i]["subjects"] == room[j]["subjects"] and room[i]["klassen"] == room[j]["klassen"]:
         if j > 0:
@@ -56,7 +57,7 @@ def getStartOfHour(room, i):
 
 
 def getEndOfHour(room, i):
-    """goes through the list of hours and returns the end time of last one that is not the same"""
+    """goes through the list of hours and returns the end time of the last one that is the same"""
     j = i
     while room[i]["subjects"] == room[j]["subjects"] and room[i]["klassen"] == room[j]["klassen"]:
         if len(room) > (j + 1):
@@ -67,7 +68,7 @@ def getEndOfHour(room, i):
 
 
 def timeToString(time):
-    """:returns the time in the format hh:mm as a String"""
+    """:returns the time in the format hh:mm"""
     return str(time.hour) + ":" + str(time.minute)
 
 
@@ -100,7 +101,7 @@ def teachersToString(hour):
             short += (teacher[1] + "; ")
         short = short[:-2]  # deletes the last to characters which are "; "
         short += ")"
-    short = short[:lengthTeachers]  # cuts of every character after tha set limit
+    short = short[:lengthTeachers]  # cuts of every character after tha set limit TODO: find better solution
     return short
 
 
@@ -119,7 +120,7 @@ def subjectsToString(hour):
     for subject in hour["subjects"]:
         short += (subject[1] + "; ")
     short = short[:-2]  # deletes the last to characters which are "; "
-    short = short[:lengthSubjects]  # cuts of every character after tha set limit
+    short = short[:lengthSubjects]  # cuts of every character after tha set limit TODO: find better solution
 
     return short
 
@@ -139,7 +140,7 @@ def klassenToString(hour):
     for klasse in hour["klassen"]:
         short += (klasse[1] + "; ")
     short = short[:-2]  # deletes the last to characters which are "; "
-    short = short[:lengthKlassen]  # cuts of every character after tha set limit
+    short = short[:lengthKlassen]  # cuts of every character after tha set limit TODO: find better solution
 
     return short
 
