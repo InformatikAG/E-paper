@@ -211,7 +211,7 @@ nextApiUpdate = datetime.datetime.now()
 while True:  # run forever
     if nextApiUpdate < datetime.datetime.now():
         print("updating API")
-        print(subprocess.run("API.py", shell=True))
-        nextApiUpdate = nextApiUpdate + datetime.timedelta(hours=1)
+        print(subprocess.run("API.py", shell=True))  # runAPI.py
+        nextApiUpdate = nextApiUpdate + datetime.timedelta(hours=1)  # increase next update time by one hour
     updateMqtt()
     time.sleep(60)
