@@ -1,6 +1,8 @@
 import pickle
 import datetime
 import paho.mqtt.client as mqtt
+import time
+import subprocess
 
 # creating the client object and connecting to the mqtt server
 client = mqtt.Client()
@@ -166,40 +168,50 @@ def isBreak(room):
     return True
 
 
-for room in rooms:
-    hour = getCurrentHour(rooms[room])
-    print(room + ":")
-    if hour is None:
-        print("sleep until tomorrow")
-        client.publish(room + "/DeepSleepTime", (datetime.datetime.now().replace(hour=7, minute=0, second=0)
-                                                 - datetime.datetime.now()
-                                                 + datetime.timedelta(days=1)).total_seconds())
+def updateMqtt():
+    for room in rooms:
+        hour = getCurrentHour(rooms[room])
+        print(room + ":")
+        if hour is None:
+            print("sleep until tomorrow")
+            client.publish(room + "/DeepSleepTime", (datetime.datetime.now().replace(hour=7, minute=0, second=0)
+                                                     - datetime.datetime.now()
+                                                     + datetime.timedelta(days=1)).total_seconds())
+            print()
+            continue
+
+        fach = subjectsToString(hour)
+        print(" Fach: " + fach)
+        client.publish(room + "/Fach", fach)
+
+        lehrer = teachersToString(hour)
+        print(" Lehrer: " + lehrer)
+        client.publish(room + "/Lehrer", lehrer)
+
+        zeit = (timeToString(getStartOfHour(rooms[room], getCurrentHourIndex(rooms[room]))) + " - "
+                + timeToString(getEndOfHour(rooms[room], getCurrentHourIndex(rooms[room]))))
+        print(" Zeit: " + zeit)
+        client.publish(room + "/Zeit")
+
+        klasse = klassenToString(rooms[room][0])
+        print(" Klasse: " + klasse)
+        client.publish(room + "/Klasse", klasse)
+
+        pause = isBreak(rooms[room])
+        print(" Pause: " + repr(pause))
+        client.publish(room + "/Pause", pause)
+
+        deepSleepTime = getSleepTime(rooms[room])
+        print(" DeepSleepTime: " + repr(deepSleepTime))
+        client.publish(room + "/DeepSleepTime", deepSleepTime)
+
         print()
-        continue
 
-    fach = subjectsToString(hour)
-    print(" Fach: " + fach)
-    client.publish(room + "/Fach", fach)
-
-    lehrer = teachersToString(hour)
-    print(" Lehrer: " + lehrer)
-    client.publish(room + "/Lehrer", lehrer)
-
-    zeit = (timeToString(getStartOfHour(rooms[room], getCurrentHourIndex(rooms[room]))) + " - "
-            + timeToString(getEndOfHour(rooms[room], getCurrentHourIndex(rooms[room]))))
-    print(" Zeit: " + zeit)
-    client.publish(room + "/Zeit")
-
-    klasse = klassenToString(rooms[room][0])
-    print(" Klasse: " + klasse)
-    client.publish(room + "/Klasse", klasse)
-
-    pause = isBreak(rooms[room])
-    print(" Pause: " + repr(pause))
-    client.publish(room + "/Pause", pause)
-
-    deepSleepTime = getSleepTime(rooms[room])
-    print(" DeepSleepTime: " + repr(deepSleepTime))
-    client.publish(room + "/DeepSleepTime", deepSleepTime)
-
-    print()
+nextApiUpdate = datetime.datetime.now()
+while True:  # run forever
+    if nextApiUpdate < datetime.datetime.now():
+        print("updating API")
+        print(subprocess.run("API.py", shell=True))
+        nextApiUpdate = nextApiUpdate + datetime.timedelta(hours=1)
+    updateMqtt()
+    time.sleep(60)
