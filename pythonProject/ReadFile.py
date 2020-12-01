@@ -171,8 +171,9 @@ def isBreak(room):
 def updateMqtt():
     for room in rooms:
         hour = getCurrentHour(rooms[room])
+        index = getCurrentHourIndex(rooms[room])
         print(room + ":")
-        if hour is None:
+        if hour is None:  # if there is no hour left for the day
             print("sleep until tomorrow")
             client.publish(room + "/DeepSleepTime", (datetime.datetime.now().replace(hour=7, minute=0, second=0)
                                                      - datetime.datetime.now()
@@ -188,12 +189,11 @@ def updateMqtt():
         print(" Lehrer: " + lehrer)
         client.publish(room + "/Lehrer", lehrer)
 
-        zeit = (timeToString(getStartOfHour(rooms[room], getCurrentHourIndex(rooms[room]))) + " - "
-                + timeToString(getEndOfHour(rooms[room], getCurrentHourIndex(rooms[room]))))
+        zeit = (timeToString(getStartOfHour(rooms[room], index)) + " - " + timeToString(getEndOfHour(rooms[room], index)))
         print(" Zeit: " + zeit)
         client.publish(room + "/Zeit")
 
-        klasse = klassenToString(rooms[room][0])
+        klasse = klassenToString(hour)
         print(" Klasse: " + klasse)
         client.publish(room + "/Klasse", klasse)
 
@@ -207,6 +207,7 @@ def updateMqtt():
 
         print()
 
+
 nextApiUpdate = datetime.datetime.now()
 while True:  # run forever
     if nextApiUpdate < datetime.datetime.now():
@@ -214,4 +215,4 @@ while True:  # run forever
         print(subprocess.run("API.py", shell=True))  # runAPI.py
         nextApiUpdate = nextApiUpdate + datetime.timedelta(hours=1)  # increase next update time by one hour
     updateMqtt()
-    time.sleep(60)
+    time.sleep(10)
