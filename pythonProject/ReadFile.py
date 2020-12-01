@@ -10,11 +10,9 @@ client.username_pw_set("username", "password")
 client.connect("192.168.178.117", 1883, 60)
 
 # the max lengths of strings that is allowed
-lengthTeachers = 10
-lengthOriginalTeachers = 10
-lengthSubjects = 10
-lengthKlassen = 10
-lengthOriginalRoom = 10
+lengthTeachers = 7
+lengthSubjects = 7
+lengthKlassen = 7
 
 offsetSleepStartHour = datetime.timedelta(minutes=5)
 """how long before the start of an hour does the ESP wake up"""
