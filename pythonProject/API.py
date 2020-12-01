@@ -18,8 +18,8 @@ def convertTeachers(hour):
     """:returns a list of lists with the long and short name"""
     try:
         new = []
-        for i in hour.teachers:
-            new.append([i.long_name, i.name])
+        for i in hour.teachers:  # goes through all teachers and appends them to the list
+            new.append([i.long_name, i.name])  # appends a list with the long and short name
         return new
     except:
         return []
@@ -29,8 +29,8 @@ def convertRooms(hour):
     """:returns a list of all rooms"""
     try:
         new = []
-        for i in hour.rooms:
-            new.append(i.name)
+        for i in hour.rooms:  # goes through all rooms and appends them to the list
+            new.append(i.name)  # appends the name
         return new
     except:
         return []
@@ -40,8 +40,8 @@ def convertOriginalTeachers(hour):
     """:returns a list of lists with the long and short name"""
     try:
         new = []
-        for i in hour.original_teachers:
-            new.append([i.long_name, i.name])
+        for i in hour.original_teachers:  # goes through all teachers and appends them to the list
+            new.append([i.long_name, i.name])  # appends a list with the long and short name
         return new
     except:
         return []
@@ -51,8 +51,8 @@ def convertOriginalRooms(hour):
     """:returns a list of all the names"""
     try:
         new = []
-        for i in hour.original_rooms:
-            new.append(i.name)
+        for i in hour.original_rooms:  # goes through all rooms and appends them to the list
+            new.append(i.name)  # appends the name
         return new
     except:
         return []
@@ -62,8 +62,8 @@ def convertSubjects(hour):
     """:returns a list of lists with the long and short name"""
     try:
         new = []
-        for i in hour.subjects:
-            new.append([i.long_name, i.name])
+        for i in hour.subjects:  # goes through all subjects and appends them to the list
+            new.append([i.long_name, i.name])  # appends a list with the long and short name
         return new
     except:
         return []
@@ -73,8 +73,8 @@ def convertKlassen(hour):
     """:returns a list of lists with the long and short name"""
     try:
         new = []
-        for i in hour.klassen:
-            new.append([i.long_name, i.name])
+        for i in hour.klassen:  # goes through all klassen and appends them to the list
+            new.append([i.long_name, i.name])  # appends a list with the long and short name
         return new
     except:
         return []
