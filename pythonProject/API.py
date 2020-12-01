@@ -10,10 +10,12 @@ friday = monday + datetime.timedelta(days=4)
 
 
 def sort(e):
+    """:returns the start value of the input"""
     return e["start"]
 
 
 def convertTeachers(hour):
+    """:returns a list of lists with the long and short name"""
     try:
         new = []
         for i in hour.teachers:
@@ -24,6 +26,7 @@ def convertTeachers(hour):
 
 
 def convertRooms(hour):
+    """:returns a list of all rooms"""
     try:
         new = []
         for i in hour.rooms:
@@ -34,6 +37,7 @@ def convertRooms(hour):
 
 
 def convertOriginalTeachers(hour):
+    """:returns a list of lists with the long and short name"""
     try:
         new = []
         for i in hour.original_teachers:
@@ -44,6 +48,7 @@ def convertOriginalTeachers(hour):
 
 
 def convertOriginalRooms(hour):
+    """:returns a list of all the names"""
     try:
         new = []
         for i in hour.original_rooms:
@@ -54,28 +59,31 @@ def convertOriginalRooms(hour):
 
 
 def convertSubjects(hour):
+    """:returns a list of lists with the long and short name"""
     try:
         new = []
         for i in hour.subjects:
-            new.append([i.long_name,i.name])
+            new.append([i.long_name, i.name])
         return new
     except:
         return []
 
 
 def convertKlassen(hour):
+    """:returns a list of lists with the long and short name"""
     try:
         new = []
         for i in hour.klassen:
-            new.append([i.long_name,i.name])
+            new.append([i.long_name, i.name])
         return new
     except:
         return []
 
 
 def timetableToPy(timetable):
-    table = []
-    for hour in timetable:
+    """:returns a list of dictionaries one for each hour containing all Characteristics"""
+    table = []  # creates a list
+    for hour in timetable:  # goes through all hours and appends a dictionary of all Characteristics
         table.append({
             "teachers": convertTeachers(hour),
             "original_teachers": convertOriginalTeachers(hour),
