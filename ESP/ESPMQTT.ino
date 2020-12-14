@@ -3,7 +3,8 @@
 
 #include <GxEPD.h>
 
-// select the display class to use, only one, copy from GxEPD_Example
+#include <Wire.h>
+
 #include <GxGDEW042T2/GxGDEW042T2.h>
 
 #include <GxIO/GxIO_SPI/GxIO_SPI.h>
@@ -14,38 +15,83 @@
 #include <Fonts/FreeMonoBold18pt7b.h>
 #include <Fonts/FreeMonoBold24pt7b.h>
 
-#define durationSleep 10
 
-// constructor for AVR Arduino, copy from GxEPD_Example else
-GxIO_Class io(SPI, /*CS=D1*/ 5, /*DC=D3*/ 0, /*RST=D4*/ 2); // arbitrary selection of D3(=0), D4(=2), selected for default of GxEPD_Class
-GxEPD_Class display(io, /*RST=D6*/ 12, /*BUSY=D2*/ 4); // default selection of D4(=2), D2(=4)
 
-// Update these with values suitable for your network.
+GxIO_Class io(SPI, /*CS=D1*/ 5, /*DC=D3*/ 0, /*RST=D4*/ 2);
+GxEPD_Class display(io, /*RST=D6*/ 12, /*BUSY=D2*/ 4);
 
 const char* ssid = "";
 const char* password = "";
 const char* mqtt_server = "";
 
+const String Room = "2.312";
+
+
 WiFiClient espClient;
 PubSubClient client(espClient);
-unsigned long lastMsg = 0;
-#define MSG_BUFFER_SIZE	(50)
+
+#define MSG_BUFFER_SIZE  (50)
 char msg[MSG_BUFFER_SIZE];
-int value = 0;
+
+void drawRect(int x1, int y1, int x2, int y2) {      //Rechteck
+
+  display.drawLine(x1, y1, x2, y1, GxEPD_BLACK);
+  display.drawLine(x2, y1, x2, y2, GxEPD_BLACK);
+  display.drawLine(x2, y2, x1, y2, GxEPD_BLACK);
+  display.drawLine(x1, y2, x1, y1, GxEPD_BLACK);
+}
+
+void drawErrorNoConnectionWifi() {
+  const GFXfont* f = &FreeMonoBold12pt7b;
+  display.setFont(f);
+  display.fillScreen(GxEPD_WHITE);
+  display.setTextColor(GxEPD_BLACK);
+  display.setCursor(10, 150);
+  display.print("Failed to Connecting to Wifi");
+}
+
+void LehrerVertretung(String Lehrer) {                            //LeherVertretung
+  for (int i = 0; i <= 4; i++) {
+    display.drawLine(205, 65 - i, 290, 65 - i, GxEPD_BLACK);
+  }
+  display.setCursor(300, 115);
+  display.print(Lehrer);
+}
+void FachVertretung(String Fach) {                            //LeherVertretung
+  for (int i = 0; i <= 4; i++) {
+    display.drawLine(205, 105 - i, 290, 105 - i, GxEPD_BLACK);
+
+  }
+  display.setCursor(300, 75);
+  display.print(Fach);
+}
 
 void setup_wifi() {
+  int timeoutcounter = 0;
 
   delay(10);
+
   Serial.println();
   Serial.print("Connecting to ");
   Serial.println(ssid);
-  // We start by connecting to a WiFi network
+
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, password);
 
-  while (WiFi.status() != WL_CONNECTED) { //wait until conected to wifi
+  while (WiFi.status() != WL_CONNECTED) {
     delay(500);
     Serial.print(".");
+    timeoutcounter++;
+    if (timeoutcounter == 1000) {
+      Serial.print("Can not connected to Wifi with ssid:");
+      Serial.println(ssid);
+      display.drawPaged(drawErrorNoConnectionWifi);
+      timeoutcounter = 0;
+      delay(5000);
+      WiFi.disconnect();
+      ESP.deepSleep(10 * 1e6);
+       
+    }
   }
   randomSeed(micros());
 }
@@ -55,11 +101,41 @@ char Lehrer[20];
 char Zeit[20];
 char Klasse[20];
 
+void layoutpage() {
+  const GFXfont* f = &FreeMonoBold24pt7b;
+  display.setFont(f);
+  display.setCursor(120, 35);
+  display.setTextColor(GxEPD_BLACK);
+  display.print(Room);
+  display.setCursor(10, 75);
+  display.print("Fach  :");
+  display.print(Fach);
+  display.setCursor(10, 115);
+  display.print("Lehrer:");
+  display.print(Lehrer);
+  display.setCursor(10, 155);
+  display.print("Klasse:");
+  display.print(Klasse);
+  display.setCursor(10, 195);
+  display.print(Zeit);
+  display.setCursor(10, 275);
+  display.print("E-PaperSchild");
+  display.setCursor(10, 235);
+
+  LehrerVertretung("OST");                //LehrerVertretung
+
+  FachVertretung("WIR");                  //FachVertretung
+
+  drawRect(0, 240, 399, 280);             //Linien
+  drawRect(0, 40, 399, 200);
+  drawRect(0, 0, 399, 40);
+
+}
+
+
 void callback(char* topic, byte* payload, unsigned int length) {
-
   Serial.println(topic[10]);
-
-  switch (topic[10]) { //check the 11th charactar of the MQTT Topic
+  switch (topic[10]) {
     case 'F':
       memset(Fach, 0, sizeof(Fach));
       for (int i = 0; i < length; i++) {
@@ -91,87 +167,61 @@ void callback(char* topic, byte* payload, unsigned int length) {
       memset(Klasse, 0, sizeof(Klasse));
       for (int i = 0; i < length; i++) {
         Klasse[i] = (char)payload[i];
-        if (i >= 20) {
+        if (i >= 5) {
           break;
         }
       }
       break;
-    case 'R':
-      if ((char)payload[0] == '0') {
-        display.setRotation(0);
-        //display.drawPaged(writeText);
-      } else if ((char)payload[0] == '1') {
-        display.setRotation(1);
-        display.drawPaged(drawErrorRot);
-      } else if ((char)payload[0] == '2') {
-        display.setRotation(2);
-        display.drawPaged(writeText);
-      } else if ((char)payload[0] == '3') {
-        display.setRotation(3);
-        display.drawPaged(drawErrorRot);
-      }
-      break;
+    case 'D':
+      display.drawPaged(layoutpage);
 
-    case 'U':
-      display.drawPaged(writeText);
-      Serial.println("ESP geht in den Deep Sleep für 10 Minuten");
-      client.publish("Display01/Status", "DeepSleep_10");
+      char DeepSleepTimeChar[20];
+      int DeepSleepTime;
+      for (int i = 0; i < length; i++) {
+        DeepSleepTimeChar[i] = (char)payload[i];
+        if (i >= 20) {
+          break;
+        }
+      }
+      Serial.println("ESP geht in den Deep Sleep für DeepSleep!");
+
+      sscanf(DeepSleepTimeChar, "%d", &DeepSleepTime);
+      Serial.println(DeepSleepTime);
+      client.publish("Display01/Status", "DeepSleep");
       delay(3000);
-      ESP.deepSleep(600 * 1e6);
+      client.disconnect();
+      WiFi.disconnect();
+      ESP.deepSleep(DeepSleepTime * 1e6);
       break;
 
     default:
-      display.drawPaged(drawError);
+      Serial.println("Error");
   }
-
-
-
 }
-void writeText() {
-  const GFXfont* f = &FreeMonoBold24pt7b;
+
+
+void drawErrorNoConnection() {
+  const GFXfont* f = &FreeMonoBold12pt7b;
   display.setFont(f);
-  display.setCursor(120, 30);
-  display.drawLine(0, 40, 400, 40, GxEPD_BLACK);
+  display.fillScreen(GxEPD_WHITE);
   display.setTextColor(GxEPD_BLACK);
-  display.print("2.312");
-  display.setCursor(10, 75);
-  display.print("Fach: ");
-  display.print(Fach);
-  display.drawLine(0, 80, 400, 80, GxEPD_BLACK);
-  display.setCursor(10, 115);
-  display.print("Lehrer: ");
-  display.print(Lehrer);
-  display.drawLine(0, 120, 400, 120, GxEPD_BLACK);
-  display.setCursor(10, 155);
-  display.print("Klasse: ");
-  display.print(Klasse);
-  display.drawLine(0, 160, 400, 160, GxEPD_BLACK);
-  display.setCursor(10, 195);
-  display.print(Zeit);
-  display.drawLine(0, 200, 400, 200, GxEPD_BLACK);
+  display.setCursor(10, 150);
+  display.print("Mqtt connection failed");
+}
 
-
-}
-void drawError() {
-  display.fillScreen(GxEPD_WHITE);
-  display.setCursor(80, 150);
-  display.print("ERROR 400");
-}
-void drawErrorRot() {
-  display.fillScreen(GxEPD_WHITE);
-  display.setCursor(30, 150);
-  display.print("ERROR 400");
-}
 void reconnect() {
+  int timeoutcounter = 0;
   while (!client.connected()) {
+    Serial.println();
     Serial.print("Attempting MQTT connection...");
+
     // Create a random client ID
     String clientId = "ESP8266Client-";
-    clientId += String(random(0xffff), HEX);
-    // Attempt to connect
-    if (client.connect(clientId.c_str())) {
+    clientId += Room;//String(random(0xffff), HEX);
 
-      Serial.println("connected");
+    if (client.connect(clientId.c_str())) {
+      Serial.println();
+      Serial.println("Connected");
 
       client.publish("Display01/Status", "Connected");
 
@@ -179,31 +229,39 @@ void reconnect() {
       client.subscribe("Display01/Lehrer");
       client.subscribe("Display01/Zeit");
       client.subscribe("Display01/Klasse");
-      client.subscribe("Display01/Rotation");
-      client.subscribe("Display01/Update");
-      
+      client.subscribe("Display01/DeepSleepTime");
+
 
     } else {
       Serial.print("failed, rc=");
       Serial.print(client.state());
       Serial.println(" try again in 5 seconds");
-      // Wait 5 seconds before retrying
+      timeoutcounter++;
       delay(5000);
+    }
+    if (timeoutcounter == 2) {
+      display.drawPaged(drawErrorNoConnection);
+      Serial.println("ESP geht in den Deep Sleep für 10 Minuten ,da keine verbindung aufgebaut werden konnte!");
+      delay(10000);
+      timeoutcounter = 0;
+      //ESP.deepSleep(10 * 6e7);
+      
     }
   }
 }
 void setup() {
-  pinMode(BUILTIN_LED, OUTPUT);     // Initialize the BUILTIN_LED pin as an output
+  pinMode(BUILTIN_LED, OUTPUT);
   Serial.begin(115200);
-  setup_wifi();
-  client.setServer(mqtt_server, 1884);
+
+  client.setServer(mqtt_server, 1883);
   client.setCallback(callback);
   display.init(115200);
-
+  setup_wifi();
   memset(Fach, 0, sizeof(Fach));
   memset(Lehrer, 0, sizeof(Lehrer));
   memset(Zeit, 0, sizeof(Zeit));
   memset(Klasse, 0, sizeof(Klasse));
+
 }
 
 void loop() {
@@ -211,5 +269,4 @@ void loop() {
     reconnect();
   }
   client.loop();
-
 }
