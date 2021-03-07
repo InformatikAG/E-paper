@@ -8,6 +8,7 @@ original_teachers = ["4", "1", "2", "3"]
 subjects = ["IFT", "TPR"]
 klassen = ["191", "192", "193"]
 
+
 def timetableToPy(room):
     """:returns a list of dictionaries one for each hour containing all Characteristics"""
     table = []  # creates a list
@@ -26,14 +27,11 @@ def timetableToPy(room):
     return table
 
 
-#with open("test", "wb") as file:
 data = {}
-
 rooms = ["2.312"]
-print(rooms)
-
 for room in rooms:
     data.update({room: timetableToPy(room)})
 
-#pickle.dump(data, file)
+with open("test", "wb") as file:
+    pickle.dump(data, file)
 print(data)
