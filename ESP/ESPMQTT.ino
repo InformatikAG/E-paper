@@ -27,6 +27,7 @@ const char* mqtt_server = "";
 const String Room = "2.312";
 
 
+
 WiFiClient espClient;
 PubSubClient client(espClient);
 
@@ -122,9 +123,6 @@ void layoutpage() {
   display.print("E-PaperSchild");
   display.setCursor(10, 235);
 
-  LehrerVertretung("OST");                //LehrerVertretung
-
-  FachVertretung("WIR");                  //FachVertretung
 
   drawRect(0, 240, 399, 280);             //Linien
   drawRect(0, 40, 399, 200);
@@ -134,8 +132,9 @@ void layoutpage() {
 
 
 void callback(char* topic, byte* payload, unsigned int length) {
-  Serial.println(topic[10]);
-  switch (topic[10]) {
+  Serial.println(topic);
+  Serial.println(topic[Room.length()+1]);
+  switch (topic[Room.length()+1]) {
     case 'F':
       memset(Fach, 0, sizeof(Fach));
       for (int i = 0; i < length; i++) {
@@ -191,7 +190,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
       delay(3000);
       client.disconnect();
       WiFi.disconnect();
-      ESP.deepSleep(DeepSleepTime * 1e6);
+      ESP.deepSleep(DeepSleepTime);
       break;
 
     default:
@@ -223,13 +222,23 @@ void reconnect() {
       Serial.println();
       Serial.println("Connected");
 
-      client.publish("Display01/Status", "Connected");
+      String Status = Room; Status += "/Status";
+      client.publish(Status.c_str(), "Connected");
 
-      client.subscribe("Display01/Fach");
-      client.subscribe("Display01/Lehrer");
-      client.subscribe("Display01/Zeit");
-      client.subscribe("Display01/Klasse");
-      client.subscribe("Display01/DeepSleepTime");
+      String Fach = Room; Fach += "/Fach";
+      client.subscribe(Fach.c_str());
+
+      String Lehrer = Room; Lehrer += "/Lehrer";
+      client.subscribe(Lehrer.c_str());
+
+      String Zeit = Room; Zeit += "/Zeit";
+      client.subscribe(Zeit.c_str());
+
+      String Klasse = Room; Klasse += "/Klasse";
+      client.subscribe(Klasse.c_str());
+
+      String DeepSleepTime = Room; DeepSleepTime += "/DeepSleepTime";
+      client.subscribe(DeepSleepTime.c_str());
 
 
     } else {
@@ -253,7 +262,7 @@ void setup() {
   pinMode(BUILTIN_LED, OUTPUT);
   Serial.begin(115200);
 
-  client.setServer(mqtt_server, 1883);
+  client.setServer(mqtt_server, 1884);
   client.setCallback(callback);
   display.init(115200);
   setup_wifi();
