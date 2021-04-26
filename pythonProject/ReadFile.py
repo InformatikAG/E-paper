@@ -189,7 +189,7 @@ def updateMqtt():
 
         zeit = (timeToString(getStartOfHour(rooms[room], index)) + " - " + timeToString(getEndOfHour(rooms[room], index)))
         print(" Zeit: " + zeit)
-        client.publish(room + "/Zeit")
+        client.publish(room + "/Zeit", zeit)
 
         klasse = klassenToString(hour)
         print(" Klasse: " + klasse)
