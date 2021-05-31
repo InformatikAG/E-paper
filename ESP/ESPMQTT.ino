@@ -1,11 +1,12 @@
-#include <ESP8266WiFi.h>
+#include <WiFi.h>
 #include <PubSubClient.h>
 
 #include <GxEPD.h>
 
 #include <Wire.h>
 
-#include <GxGDEW042T2/GxGDEW042T2.h>
+// select the display class to use, only one, copy from GxEPD_Example
+#include <GxGDEW042T2/GxGDEW042T2.h>      // 4.2" b/w
 
 #include <GxIO/GxIO_SPI/GxIO_SPI.h>
 #include <GxIO/GxIO.h>
@@ -17,8 +18,8 @@
 
 
 
-GxIO_Class io(SPI, /*CS=D1*/ 5, /*DC=D3*/ 0, /*RST=D4*/ 2);
-GxEPD_Class display(io, /*RST=D6*/ 12, /*BUSY=D2*/ 4);
+GxIO_Class io(SPI, /*CS=G5*/ SS, /*DC=G17*/ 17, /*RST=G16*/ 16);
+GxEPD_Class display(io, /*RST=G16*/ 16, /*BUSY=G4*/ 4);
 
 const char* ssid = "";
 const char* password = "";
@@ -259,10 +260,9 @@ void reconnect() {
   }
 }
 void setup() {
-  pinMode(BUILTIN_LED, OUTPUT);
+  //pinMode(BUILTIN_LED, OUTPUT);
   Serial.begin(115200);
-
-  client.setServer(mqtt_server, 1884);
+  client.setServer(mqtt_server, 1883);
   client.setCallback(callback);
   display.init(115200);
   setup_wifi();
