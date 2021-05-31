@@ -191,7 +191,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
       delay(3000);
       client.disconnect();
       WiFi.disconnect();
-      ESP.deepSleep(DeepSleepTime);
+      ESP.deepSleep(DeepSleepTime * 1e6); // convert DeepSleepTimep to mycroseconds
       break;
 
     default:
