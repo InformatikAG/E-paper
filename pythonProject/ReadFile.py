@@ -209,8 +209,9 @@ def updateMqtt():
 nextApiUpdate = datetime.datetime.now()
 while True:  # run forever
     if nextApiUpdate < datetime.datetime.now():
-        print("updating API")
-        print(subprocess.run("API.py", shell=True))  # runAPI.py
-        nextApiUpdate = nextApiUpdate + datetime.timedelta(hours=1)  # increase next update time by one hour
+        print("Read File")
+        with open("test", "rb") as infile:
+            rooms = pickle.load(infile)  # using pickle to read the file containing all the untis data
+        nextApiUpdate = nextApiUpdate + datetime.timedelta(minutes=30)  # increase next update time by one hour
     updateMqtt()
     time.sleep(10)
