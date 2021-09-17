@@ -17,7 +17,7 @@
 #include <Fonts/FreeMonoBold24pt7b.h>
 
 
-
+    
 GxIO_Class io(SPI, /*CS=G5*/ SS, /*DC=G17*/ 17, /*RST=G16*/ 16);
 GxEPD_Class display(io, /*RST=G16*/ 16, /*BUSY=G4*/ 4);
 
@@ -25,7 +25,7 @@ const char* ssid = "";
 const char* password = "";
 const char* mqtt_server = "";
 
-const String Room = "2.312";
+const String Room = "2.302";
 
 
 
@@ -35,7 +35,7 @@ PubSubClient client(espClient);
 #define MSG_BUFFER_SIZE  (50)
 char msg[MSG_BUFFER_SIZE];
 
-void drawRect(int x1, int y1, int x2, int y2) {      //Rechteck
+void drawRect(int x1, int y1, int x2, int y2) {                   //Rechteck
 
   display.drawLine(x1, y1, x2, y1, GxEPD_BLACK);
   display.drawLine(x2, y1, x2, y2, GxEPD_BLACK);
@@ -59,7 +59,7 @@ void LehrerVertretung(String Lehrer) {                            //LeherVertret
   display.setCursor(300, 115);
   display.print(Lehrer);
 }
-void FachVertretung(String Fach) {                            //LeherVertretung
+void FachVertretung(String Fach) {                                //FachVertretung
   for (int i = 0; i <= 4; i++) {
     display.drawLine(205, 105 - i, 290, 105 - i, GxEPD_BLACK);
 
@@ -84,7 +84,7 @@ void setup_wifi() {
     delay(500);
     Serial.print(".");
     timeoutcounter++;
-    if (timeoutcounter == 1000) {
+    if (timeoutcounter == 10) {
       Serial.print("Can not connected to Wifi with ssid:");
       Serial.println(ssid);
       display.drawPaged(drawErrorNoConnectionWifi);
@@ -191,7 +191,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
       delay(3000);
       client.disconnect();
       WiFi.disconnect();
-      ESP.deepSleep(DeepSleepTime);
+      ESP.deepSleep(DeepSleepTime * 1e6); // convert DeepSleepTimep to mycroseconds
       break;
 
     default:
@@ -251,7 +251,7 @@ void reconnect() {
     }
     if (timeoutcounter == 2) {
       display.drawPaged(drawErrorNoConnection);
-      Serial.println("ESP geht in den Deep Sleep für 10 Minuten ,da keine verbindung aufgebaut werden konnte!");
+      Serial.println("ESP geht in den Deep Sleep für 10 Minuten, da keine verbindung aufgebaut werden kann!");
       delay(10000);
       timeoutcounter = 0;
       //ESP.deepSleep(10 * 6e7);
@@ -260,11 +260,10 @@ void reconnect() {
   }
 }
 void setup() {
-  //pinMode(BUILTIN_LED, OUTPUT);
   Serial.begin(115200);
   client.setServer(mqtt_server, 1883);
   client.setCallback(callback);
-  display.init(115200);
+  display.init();
   setup_wifi();
   memset(Fach, 0, sizeof(Fach));
   memset(Lehrer, 0, sizeof(Lehrer));
